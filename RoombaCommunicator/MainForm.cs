@@ -3,17 +3,21 @@
  * Adapted from Jan Axelson's com_port_terminal_cs
  * 
  * 2-21-17 Sends encoded command strings to a Raspberry Pi via serial port at 57600 baud.
- * Displays incoming strings in text box. Also can send commands to quit ir shut down RPI.
+ * Displays incoming strings in text box. Also can send commands to quit or shut down RPI.
  * Can wake up, start, stop Roomba via RPI.
+ * 2-24-17: Drive command is now Drive Direct command: 145
+ * 2-28-17: RTBMonitor max length was 2147483647
  * 
+ * 3-2-2017: Command sequence is now: COMMAND, SUBCOMMAND, NUM DATA BYTES, DATA....
+ * Added buttons and commands for changing and sending KP, KI, KD to robot
  */
+
 using Microsoft.Win32;
 using System;
 using System.Drawing;
 using System.IO.Ports;
 using System.Windows.Forms;
 using COMPortTerminal.Properties;
-
 using System.Data;
 using System.Text;
 
@@ -43,6 +47,17 @@ namespace COMPortTerminal
         [FieldOffset(0)]
         public uint Int1;
     }
+    
+    [StructLayout(LayoutKind.Explicit)]
+    struct TwosComplement
+    {
+        [FieldOffset(0)]
+        public byte LSBbyte;
+        [FieldOffset(1)]
+        public byte MSBbyte;
+        [FieldOffset(0)]
+        public Int16 integer;
+    }
 
     public partial class MainForm  
     {
@@ -50,11 +65,26 @@ namespace COMPortTerminal
         const Byte ETX = 13;
         const Byte DLE = 16;
         const int MAXPACKET = 80;
+        const Int16 MAXVELOCITY = 500;
+        const Byte DRIVEDIRECT = 145;
+        const Byte ROOMBA = 0x00;
+        const Byte RASPI = 0xF0;
+        const Byte ROBOTNIK = 0x13;
+        const Byte SETPID = 0x45;
+        const Byte START = 128;
+        const Byte STOP = 173;
+        const Byte POWERDOWN = 133;
+        const Byte RESET = 7;
+        const Byte SAFE = 131;
+        const Byte FULL = 132;
+        const Byte QUIT = 0x80;
+        const Byte SHUTDOWN = 0xA0;
 
-        byte[] arrInPacket = new byte[MAXPACKET];
-        int inPacketIndex = 0;
-        UInt16 outPacketLength = 0;
 
+        TwosComplement result = new TwosComplement();
+        String strInputText = "";
+
+        /*
         ByteArray result = new ByteArray();
 
         ByteArray ConvertToTwosComplement(int decimalValue)
@@ -70,11 +100,18 @@ namespace COMPortTerminal
                 uint valueInt = (uint)-decimalValue;
                 valueInt = valueInt - 1;
                 result.Int1 = ~valueInt;
-                byte lowByte = result.LSBbyte;
+                // byte lowByte = result.LSBbyte;
+                // 
                 byte highByte = result.MSBbyte;
+
+
+
+
                 return (result);
             }
         }
+        */
+
         public MainForm() 
         { 
             InitializeComponent();if (transDefaultFormMainForm == null)	transDefaultFormMainForm = this;
@@ -83,14 +120,25 @@ namespace COMPortTerminal
             btnPort.Click += new System.EventHandler (btnPort_Click);  
             Load += new System.EventHandler (Form1_Load);                                     
             rtbMonitor.TextChanged += new System.EventHandler (rtbMonitor_TextChanged);  
-            tmrLookForPortChanges.Tick += new System.EventHandler (tmrLookForPortChanges_Tick); 
-        }             
-       
+            tmrLookForPortChanges.Tick += new System.EventHandler (tmrLookForPortChanges_Tick);
+
+            //scrKP.Value = KP * 10;
+            //lblKP.Text = scrKP.Value.ToString();       
+            scrKP.Value = 300;
+            scrKP_Scroll(null, null);
+            scrKI.Value = 30;
+            scrKI_Scroll(null, null);
+            scrKD.Value = 0;
+            scrKD_Scroll(null, null);
+
+            // DisplayStatus("Port closed", Color.Red);
+        }
+
         private const string ButtonTextOpenPort = "Open COM Port"; 
         private const string ButtonTextClosePort = "Close COM Port"; 
         private const string ModuleName = "COM Port Terminal"; 
         
-        internal MainForm MyMainForm; 
+        public MainForm MyMainForm; 
         internal PortSettingsDialog MyPortSettingsDialog; 
         internal ComPorts UserPort1;
 
@@ -120,22 +168,30 @@ namespace COMPortTerminal
             switch ( action ) 
             {
                 case "AppendToMonitorTextBox":
-                    
-                    //  Append text to the rtbMonitor textbox using the color for received data.
-                    
-                    rtbMonitor.SelectionColor = colorReceive; 
-                    rtbMonitor.AppendText( formText ); 
-                    
+
+                    //  Append text to the rtbMonitor textbox using the color for received data.                    
+                    rtbMonitor.SelectionColor = colorReceive;
+                    strInputText = string.Concat(strInputText, formText);
+                    int endPos = strInputText.IndexOf("!");
+                    if (endPos > 0)
+                    {
+                        rtbMonitor.Text = strInputText;
+                        strInputText = "";
+                    }
+
+                    // rtbMonitor.AppendText( formText ); 
+
+
                     // Return to the default color.
-                    
-                    rtbMonitor.SelectionColor = colorTransmit; 
+
+                    // rtbMonitor.SelectionColor = colorTransmit; 
                     
                     //  Trim the textbox's contents if needed.
                     
-                    if ( rtbMonitor.TextLength > maximumTextBoxLength ) 
-                    {                         
-                        TrimTextBoxContents();                         
-                    }                    
+                    //if ( rtbMonitor.TextLength > maximumTextBoxLength ) // $$$$
+                    //{                         
+                    //    TrimTextBoxContents();                         
+                    //}                    
                     break;
 
                 case "DisplayStatus":
@@ -236,16 +292,16 @@ namespace COMPortTerminal
         }        
  
         /// <summary>
-        /// Displays text in a richtextbox.
+        /// Displays text in Status bar at bottom of MainForm
         /// </summary>
         /// 
         /// <param name="status"> the text to display.</param>
         /// <param name="textColor"> the text color. </param>
        
         private void DisplayStatus( string status, Color textColor ) 
-        {             
-            rtbStatus.ForeColor = textColor; 
-            rtbStatus.Text = status;            
+        {
+            lblStatus.ForeColor = textColor;
+            lblStatus.Text = status;            
         } 
 
         /// <summary>
@@ -269,7 +325,8 @@ namespace COMPortTerminal
         {        
             //  The TrimTextboxContents routine trims a richtextbox with more data than this:
             
-            maximumTextBoxLength = 10000; 
+            // maximumTextBoxLength = 10000;  $$$$
+            maximumTextBoxLength = 128;
             rtbMonitor.SelectionColor = colorTransmit;             
         }
 
@@ -302,6 +359,7 @@ namespace COMPortTerminal
                 //  Extract the unread input.
 
                 userInput = rtbMonitor.Text.Substring(userInputIndex, textLength);
+
 
                 //  Create a message to pass to the Write operation (optional). 
                 //  The callback routine can retrieve the message when the write completes.
@@ -494,7 +552,7 @@ namespace COMPortTerminal
 
         private void UpdateStatusLabel( string status ) 
         {        
-            ToolStripStatusLabel1.Text = status; 
+            lblStatus.Text = status; 
             StatusStrip1.Update();             
         } 
 
@@ -532,7 +590,8 @@ namespace COMPortTerminal
                 UserPort1.OpenComPort(); 
                 if ( UserPort1.SelectedPort.IsOpen ) 
                 { 
-                    btnOpenOrClosePort.Text = ButtonTextClosePort; 
+                    btnOpenOrClosePort.Text = ButtonTextClosePort;
+                    DisplayStatus("Port open", Color.Red);
                 }                 
             } 
             else 
@@ -541,7 +600,8 @@ namespace COMPortTerminal
                 
                 if ( !( UserPort1.SelectedPort.IsOpen ) ) 
                 { 
-                    btnOpenOrClosePort.Text = ButtonTextOpenPort; 
+                    btnOpenOrClosePort.Text = ButtonTextOpenPort;
+                    DisplayStatus("Port closed", Color.Red);
                 }                 
             }             
         } 
@@ -630,7 +690,7 @@ namespace COMPortTerminal
         /// </summary>
      
         private void rtbMonitor_TextChanged( System.Object sender, System.EventArgs e ) 
-        {           
+        {            
             ProcessTextboxInput();             
         } 
                
@@ -690,85 +750,30 @@ namespace COMPortTerminal
         }
 
 
-        private void btnDrive_Click(object sender, EventArgs e)
-        {
-            int velocity = 0, radius = 0;
-            Byte velocityLSB = 0, velocityMSB = 0, radiusLSB = 0, radiusMSB = 0;
-            inPacketIndex = 0;
-
-            rtbMonitor.Text = "";
-
-            if (txtVelocity.Text == "") txtVelocity.Text = "0";
-            if (txtRadius.Text == "") txtRadius.Text = "0";
-
-            String strVelocity = txtVelocity.Text;
-            velocity = (int)Convert.ToDecimal(strVelocity);
-            if (velocity > 500) velocity = 500;
-            else if (velocity < -500) velocity = -500;
-            strVelocity = velocity.ToString();
-            txtVelocity.Text = strVelocity;
-
-            String strRadius = txtRadius.Text;
-            radius = (int)Convert.ToDecimal(strRadius);
-            if (radius > 2000) radius = 2000;
-            else if (radius < -2000) radius = -2000;
-            strRadius = radius.ToString();
-            txtRadius.Text = strRadius;
-
-            result = ConvertToTwosComplement(velocity);
-            velocityLSB = result.LSBbyte;
-            velocityMSB = result.MSBbyte;
-
-            result = ConvertToTwosComplement(radius);
-            radiusLSB = result.LSBbyte;
-            radiusMSB = result.MSBbyte;
-
-            txtCommand1.Text = velocityMSB.ToString();
-            txtCommand2.Text = velocityLSB.ToString();
-            txtCommand3.Text = radiusMSB.ToString();
-            txtCommand4.Text = radiusLSB.ToString();
-
-            byte[] arrCommand = new byte[MAXPACKET];
-
-            arrCommand[0] = 137;
-            arrCommand[1] = velocityMSB;
-            arrCommand[2] = velocityLSB;
-            arrCommand[3] = radiusMSB;
-            arrCommand[4] = radiusLSB;
-
-            byte[] arrOutPacket = new byte[MAXPACKET];
-            outPacketLength = BuildPacket(0, ref arrCommand, 5, ref arrOutPacket);
-
-            if (outPacketLength > 0) 
-                UserPort1.WriteBytesToComPort(arrOutPacket, 0, outPacketLength);            
-        }
 
         bool insertByte(byte dataByte, ref byte[] ptrBuffer, ref UInt16 index)
         {
             if (index >= MAXPACKET) return (false);
-            if (dataByte == STX || dataByte == DLE || dataByte == ETX)
-            {
-                ptrBuffer[index++] = DLE;
-            }
+            if (dataByte == STX || dataByte == DLE || dataByte == ETX)           
+                ptrBuffer[index++] = DLE;            
             if (index >= MAXPACKET) return (false);
             ptrBuffer[index++] = dataByte;
             return (true);
         }
 
-        UInt16 BuildPacket(byte command, ref byte[] ptrData, UInt16 dataLength, ref byte[] ptrPacket)
+        UInt16 BuildPacket(byte command, byte subCommand, byte dataLength, ref byte[] ptrData, ref byte[] ptrPacket)
         {
+            UInt16 packetIndex = 0, dataIndex = 0;
+
             if (dataLength <= MAXPACKET)
             {
-                UInt16 packetIndex = 0;
                 ptrPacket[packetIndex++] = STX;
-                ptrPacket[packetIndex++] = 0;
-                ptrPacket[packetIndex++] = (Byte)dataLength;
-
-                for (UInt16 dataIndex = 0; dataIndex < dataLength; dataIndex++)
+                insertByte(command, ref ptrPacket, ref packetIndex);                                
+                insertByte(subCommand, ref ptrPacket, ref packetIndex);
+                insertByte(dataLength, ref ptrPacket, ref packetIndex);
+                for (dataIndex = 0; dataIndex < dataLength; dataIndex++)
                     insertByte(ptrData[dataIndex], ref ptrPacket, ref packetIndex);
-
                 ptrPacket[packetIndex++] = ETX;
-
                 return (packetIndex);
             }
             else return (0);
@@ -781,9 +786,9 @@ namespace COMPortTerminal
 
             Byte[] arrData = new Byte[5];
             arrData[0] = STX;
-            arrData[1] = 0;
-            arrData[2] = 1;
-            arrData[3] = 7;
+            arrData[1] = ROOMBA;
+            arrData[2] = RESET;
+            arrData[3] = 0;
             arrData[4] = ETX;
             UserPort1.WriteBytesToComPort(arrData, 0, 5);
         }
@@ -794,9 +799,9 @@ namespace COMPortTerminal
 
             Byte[] arrData = new Byte[5];
             arrData[0] = STX;
-            arrData[1] = 0;
-            arrData[2] = 1;
-            arrData[3] = 173;
+            arrData[1] = ROOMBA;
+            arrData[2] = STOP;
+            arrData[3] = 0;
             arrData[4] = ETX;
             UserPort1.WriteBytesToComPort(arrData, 0, 5);
         }
@@ -812,9 +817,9 @@ namespace COMPortTerminal
 
             Byte[] arrData = new Byte[5];
             arrData[0] = STX;
-            arrData[1] = 0;
-            arrData[2] = 1;
-            arrData[3] = 131;
+            arrData[1] = ROOMBA;
+            arrData[2] = SAFE;            
+            arrData[3] = 0;
             arrData[4] = ETX;
             UserPort1.WriteBytesToComPort(arrData, 0, 5);
         }
@@ -825,9 +830,9 @@ namespace COMPortTerminal
 
             Byte[] arrData = new Byte[9];
             arrData[0] = STX;
-            arrData[1] = 0;
-            arrData[2] = 5;
-            arrData[3] = 137;
+            arrData[1] = ROOMBA;
+            arrData[2] = DRIVEDIRECT;
+            arrData[3] = 4;
             arrData[4] = 0;
             arrData[5] = 0;
             arrData[6] = 0;
@@ -842,9 +847,9 @@ namespace COMPortTerminal
 
             Byte[] arrData = new Byte[5];
             arrData[0] = STX;
-            arrData[1] = 0;
-            arrData[2] = 1;
-            arrData[3] = 132;
+            arrData[1] = ROOMBA;
+            arrData[2] = FULL;
+            arrData[3] = 0;
             arrData[4] = ETX;
             UserPort1.WriteBytesToComPort(arrData, 0, 5);
         }
@@ -853,22 +858,13 @@ namespace COMPortTerminal
         {
             Byte[] arrData = new Byte[5];
             arrData[0] = STX;
-            arrData[1] = 0;
-            arrData[2] = 1;
-            arrData[3] = 133;
+            arrData[1] = ROOMBA;
+            arrData[2] = POWERDOWN;
+            arrData[3] = 0;
             arrData[4] = ETX;
             UserPort1.WriteBytesToComPort(arrData, 0, 5);
         }
 
-        //public static string ConvertToString(byte[] bytes)
-        //{
-        //    return new string(bytes.ToString Select(Convert.ToChar).ToArray());
-        //}
-
-        private void btnSend_Click(object sender, EventArgs e)
-        {
-            rtbMonitor.Text = "";
-        }
 
         private void btnStart_Click(object sender, EventArgs e)
         {
@@ -876,9 +872,9 @@ namespace COMPortTerminal
 
             Byte[] arrData = new Byte[5];
             arrData[0] = STX;
-            arrData[1] = 0;
-            arrData[2] = 1;
-            arrData[3] = 128;
+            arrData[1] = ROOMBA;
+            arrData[2] = START;
+            arrData[3] = 0;
             arrData[4] = ETX;
             UserPort1.WriteBytesToComPort(arrData, 0, 5);
         }
@@ -889,9 +885,9 @@ namespace COMPortTerminal
 
             Byte[] arrData = new Byte[5];
             arrData[0] = STX;
-            arrData[1] = 0;
-            arrData[2] = 1;
-            arrData[3] = 133;
+            arrData[1] = ROOMBA;
+            arrData[2] = POWERDOWN;
+            arrData[3] = 0;
             arrData[4] = ETX;
             UserPort1.WriteBytesToComPort(arrData, 0, 5);
         }
@@ -899,23 +895,183 @@ namespace COMPortTerminal
         private void btnQuit_Click(object sender, EventArgs e)
         {
             rtbMonitor.Text = "QUIT";
-            Byte[] arrData = new Byte[4];
+            Byte[] arrData = new Byte[5];
             arrData[0] = STX;
-            arrData[1] = 0x80;  // QUIT command
-            arrData[2] = 0;
-            arrData[3] = ETX;
-            UserPort1.WriteBytesToComPort(arrData, 0, 4);
+            arrData[1] = RASPI;
+            arrData[2] = QUIT;
+            arrData[3] = 0;
+            arrData[4] = ETX;
+            UserPort1.WriteBytesToComPort(arrData, 0, 5);
         }
 
         private void btnShutdown_Click(object sender, EventArgs e)
         {
             rtbMonitor.Text = "SHUTDOWN";
-            Byte[] arrData = new Byte[4];
+            Byte[] arrData = new Byte[5];
             arrData[0] = STX;
-            arrData[1] = 0xA0; // SHUTDOWN command
-            arrData[2] = 0;
-            arrData[3] = ETX;
-            UserPort1.WriteBytesToComPort(arrData, 0, 4);
+            arrData[1] = RASPI;
+            arrData[2] = SHUTDOWN;
+            arrData[3] = 0;
+            arrData[4] = ETX;
+            UserPort1.WriteBytesToComPort(arrData, 0, 5);
+        }
+
+
+        private void tmrLookForPortChanges_Tick_1(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void rtbStatus_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+        
+        private void lblVelocity_Click(object sender, EventArgs e)
+        {
+
+        }
+        
+        private void btnSend_Click(object sender, EventArgs e)
+        {
+            short velocity;
+            velocity = (short)(0 - scrVelocity.Value);
+            sendVelocity(ROBOTNIK, velocity, velocity);
+        }
+
+        private void btnDrive_Click(object sender, EventArgs e)
+        {
+            Int16 velocityLeft, velocityRight;
+
+            if (txtVelocityLeft.Text == "") txtVelocityLeft.Text = "0";
+            if (txtVelocityRight.Text == "") txtVelocityRight.Text = "0";
+
+            String strVelocityLeft = txtVelocityLeft.Text;
+            velocityLeft = (Int16)Convert.ToDecimal(strVelocityLeft);
+            if (velocityLeft > MAXVELOCITY) velocityLeft = MAXVELOCITY;
+            else if (velocityLeft < -MAXVELOCITY) velocityLeft = -MAXVELOCITY;
+            strVelocityLeft = velocityLeft.ToString();
+            txtVelocityLeft.Text = strVelocityLeft;
+
+            String strVelocityRight = txtVelocityRight.Text;
+            velocityRight = (Int16)Convert.ToDecimal(strVelocityRight);
+            if (velocityRight > MAXVELOCITY) velocityRight = MAXVELOCITY;
+            else if (velocityRight < -MAXVELOCITY) velocityRight = -MAXVELOCITY;
+            strVelocityRight = velocityRight.ToString();
+            txtVelocityRight.Text = strVelocityRight;
+
+            rtbMonitor.Text = "";
+            sendVelocity (ROOMBA, velocityLeft, velocityRight);
+        }
+
+        private void sendVelocity(byte command, short velocityLeft, short velocityRight)
+        {
+            byte[] arrPacketData = new byte[MAXPACKET];
+            byte[] arrOutPacket = new byte[MAXPACKET];
+            UInt16 outPacketLength;
+
+            result.integer = (Int16)velocityLeft;
+            arrPacketData[0] = result.MSBbyte;
+            arrPacketData[1] = result.LSBbyte;
+
+            result.integer = (Int16)velocityRight;
+            arrPacketData[2] = result.MSBbyte;
+            arrPacketData[3] = result.LSBbyte;
+
+            outPacketLength = BuildPacket(command, DRIVEDIRECT, 4, ref arrPacketData, ref arrOutPacket);
+
+            if (outPacketLength > 0)
+                UserPort1.WriteBytesToComPort(arrOutPacket, 0, outPacketLength);
+        }
+
+        private void scrVelocity_Scroll(object sender, ScrollEventArgs e)
+        {
+            Int16 velocity;
+            velocity = (Int16) (0 - scrVelocity.Value);
+            lblVelocity.Text = "VEL: " + velocity.ToString();
+            txtVelocityLeft.Text = txtVelocityRight.Text = velocity.ToString();
+        }
+
+        public void scrKP_Scroll(object sender, ScrollEventArgs e)
+        {
+            UInt16 KP;
+            KP = (UInt16)(scrKP.Value);
+            lblKP.Text = "KP = " + scrKP.Value.ToString();
+        }
+
+        private void scrKI_Scroll(object sender, ScrollEventArgs e)
+        {
+            UInt16 KI;
+            KI = (UInt16)(scrKI.Value);
+            lblKI.Text = "KI = " + scrKI.Value.ToString();
+        }
+
+        private void scrKD_Scroll(object sender, ScrollEventArgs e)
+        {
+            UInt16 KD;
+            KD = (UInt16)(scrKD.Value);
+            lblKD.Text = "KD = " + scrKD.Value.ToString();
+        }
+
+        private void btnSendPID_Click(object sender, EventArgs e)
+        {
+            byte[] arrPacketData = new byte[MAXPACKET];
+            byte[] arrOutPacket = new byte[MAXPACKET];
+            UInt16 outPacketLength;
+            UInt16 KP, KI, KD;
+
+            KP = (UInt16)(scrKP.Value);
+            KI = (UInt16)(scrKI.Value);
+            KD = (UInt16)(scrKD.Value);
+
+            result.integer = (Int16)KP;
+            arrPacketData[0] = result.MSBbyte;
+            arrPacketData[1] = result.LSBbyte;
+
+            result.integer = (Int16)KI;
+            arrPacketData[2] = result.MSBbyte;
+            arrPacketData[3] = result.LSBbyte;
+
+            result.integer = (Int16)KD;
+            arrPacketData[4] = result.MSBbyte;
+            arrPacketData[5] = result.LSBbyte;
+
+            outPacketLength = BuildPacket(ROBOTNIK, SETPID, 6, ref arrPacketData, ref arrOutPacket);
+
+            if (outPacketLength > 0)
+                UserPort1.WriteBytesToComPort(arrOutPacket, 0, outPacketLength);
+
+        }
+
+        private void btnStartRobotnik_Click(object sender, EventArgs e)
+        {
+            Byte[] arrData = new Byte[5];
+            rtbMonitor.Text = "";
+
+            if (btnStartStop.Text == "START") {
+                btnStartStop.Text = "STOP";                
+                arrData[0] = STX;
+                arrData[1] = ROBOTNIK;
+                arrData[2] = START;
+                arrData[3] = 1;
+                arrData[4] = ETX;
+                UserPort1.WriteBytesToComPort(arrData, 0, 5);
+            }
+            else
+            {
+                btnStartStop.Text = "START";
+                arrData[0] = STX;
+                arrData[1] = ROBOTNIK;
+                arrData[2] = 1;
+                arrData[3] = STOP;
+                arrData[4] = ETX;
+                UserPort1.WriteBytesToComPort(arrData, 0, 5);
+            }
         }
     }
-} 
+}

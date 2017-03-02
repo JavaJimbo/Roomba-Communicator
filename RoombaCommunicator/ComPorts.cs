@@ -3,6 +3,7 @@ using System.IO.Ports;
 using System.Runtime.Remoting.Messaging; 
 using System.Drawing;
 using System.Windows.Forms;
+using COMPortTerminal;
 
 namespace COMPortTerminal
 {    
@@ -211,10 +212,11 @@ namespace COMPortTerminal
             { 
                 //  Get data from the COM port.
                 
-                newReceivedData = SelectedPort.ReadExisting(); 
+                newReceivedData = SelectedPort.ReadExisting();
                 
+
                 //  Save the number of characters received.
-                
+
                 ReceivedDataLength += newReceivedData.Length; 
                 
                 if ( null != UserInterfaceData ) UserInterfaceData( "AppendToMonitorTextBox", newReceivedData, Color.Black ); 
@@ -342,10 +344,11 @@ namespace COMPortTerminal
                             //  Timeouts are in milliseconds.
                             
                             SelectedPort.ReadTimeout = 5000; 
-                            SelectedPort.WriteTimeout = 5000; 
-                            
+                            SelectedPort.WriteTimeout = 5000;
+                            // SelectedPort.ReceivedBytesThreshold = 32; // $$$$
+
                             //  Specify the routines that run when a DataReceived or ErrorReceived event occurs.
-                           
+
                             SelectedPort.DataReceived += SerialDataReceivedEventHandler1; 
                             SelectedPort.ErrorReceived += SerialErrorReceivedEventHandler1; 
                            

@@ -1,10 +1,10 @@
 C:\Users\Jim\Documents\Visual Studio 2015\Projects\RoombaCommunicator\bin\Debug\COM Port Terminal.exe.config
 C:\Users\Jim\Documents\Visual Studio 2015\Projects\RoombaCommunicator\bin\Debug\COM Port Terminal.exe
 C:\Users\Jim\Documents\Visual Studio 2015\Projects\RoombaCommunicator\bin\Debug\COM Port Terminal.pdb
+C:\Users\Jim\Documents\Visual Studio 2015\Projects\RoombaCommunicator\obj\Debug\RoombaCommunicator.csprojResolveAssemblyReference.cache
 C:\Users\Jim\Documents\Visual Studio 2015\Projects\RoombaCommunicator\obj\Debug\COMPortTerminal.MainForm.resources
 C:\Users\Jim\Documents\Visual Studio 2015\Projects\RoombaCommunicator\obj\Debug\COMPortTerminal.PortSettingsDialog.resources
 C:\Users\Jim\Documents\Visual Studio 2015\Projects\RoombaCommunicator\obj\Debug\COMPortTerminal.Properties.Resources.resources
 C:\Users\Jim\Documents\Visual Studio 2015\Projects\RoombaCommunicator\obj\Debug\RoombaCommunicator.csproj.GenerateResource.Cache
 C:\Users\Jim\Documents\Visual Studio 2015\Projects\RoombaCommunicator\obj\Debug\COM Port Terminal.exe
 C:\Users\Jim\Documents\Visual Studio 2015\Projects\RoombaCommunicator\obj\Debug\COM Port Terminal.pdb
-C:\Users\Jim\Documents\Visual Studio 2015\Projects\RoombaCommunicator\obj\Debug\RoombaCommunicator.csprojResolveAssemblyReference.cache

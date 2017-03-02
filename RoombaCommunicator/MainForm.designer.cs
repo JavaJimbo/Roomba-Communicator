@@ -34,24 +34,18 @@ namespace COMPortTerminal
         {
             this.components = new System.ComponentModel.Container();
             this.rtbMonitor = new System.Windows.Forms.RichTextBox();
-            this.rtbStatus = new System.Windows.Forms.RichTextBox();
             this.StatusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.ToolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.lblStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.btnPort = new System.Windows.Forms.Button();
             this.btnOpenOrClosePort = new System.Windows.Forms.Button();
             this.tmrLookForPortChanges = new System.Windows.Forms.Timer(this.components);
-            this.btnSend = new System.Windows.Forms.Button();
+            this.btnSendVel = new System.Windows.Forms.Button();
             this.btnDrive = new System.Windows.Forms.Button();
             this.btnHalt = new System.Windows.Forms.Button();
             this.lblDriveCommand = new System.Windows.Forms.Label();
-            this.txtVelocity = new System.Windows.Forms.TextBox();
-            this.txtRadius = new System.Windows.Forms.TextBox();
-            this.txtCommand1 = new System.Windows.Forms.TextBox();
-            this.txtCommand2 = new System.Windows.Forms.TextBox();
-            this.txtCommand3 = new System.Windows.Forms.TextBox();
-            this.txtCommand4 = new System.Windows.Forms.TextBox();
+            this.txtVelocityLeft = new System.Windows.Forms.TextBox();
+            this.txtVelocityRight = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
             this.btnStart = new System.Windows.Forms.Button();
             this.btnReset = new System.Windows.Forms.Button();
             this.btnStop = new System.Windows.Forms.Button();
@@ -59,8 +53,18 @@ namespace COMPortTerminal
             this.btnSafeMode = new System.Windows.Forms.Button();
             this.btnPower = new System.Windows.Forms.Button();
             this.btnQuit = new System.Windows.Forms.Button();
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.btnShutdown = new System.Windows.Forms.Button();
+            this.btnOpenJoystick = new System.Windows.Forms.Button();
+            this.scrKP = new System.Windows.Forms.HScrollBar();
+            this.lblKP = new System.Windows.Forms.Label();
+            this.scrVelocity = new System.Windows.Forms.VScrollBar();
+            this.lblVelocity = new System.Windows.Forms.Label();
+            this.lblKI = new System.Windows.Forms.Label();
+            this.lblKD = new System.Windows.Forms.Label();
+            this.scrKI = new System.Windows.Forms.HScrollBar();
+            this.scrKD = new System.Windows.Forms.HScrollBar();
+            this.btnSendPID = new System.Windows.Forms.Button();
+            this.btnStartStop = new System.Windows.Forms.Button();
             this.StatusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -70,32 +74,18 @@ namespace COMPortTerminal
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.rtbMonitor.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rtbMonitor.Location = new System.Drawing.Point(12, 328);
+            this.rtbMonitor.Location = new System.Drawing.Point(20, 315);
+            this.rtbMonitor.MaxLength = 128;
             this.rtbMonitor.Name = "rtbMonitor";
-            this.rtbMonitor.Size = new System.Drawing.Size(455, 73);
+            this.rtbMonitor.Size = new System.Drawing.Size(444, 26);
             this.rtbMonitor.TabIndex = 7;
             this.rtbMonitor.Text = "";
             this.rtbMonitor.TextChanged += new System.EventHandler(this.rtbMonitor_TextChanged_1);
             // 
-            // rtbStatus
-            // 
-            this.rtbStatus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.rtbStatus.BackColor = System.Drawing.SystemColors.Control;
-            this.rtbStatus.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.rtbStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rtbStatus.Location = new System.Drawing.Point(14, 422);
-            this.rtbStatus.Margin = new System.Windows.Forms.Padding(5);
-            this.rtbStatus.Name = "rtbStatus";
-            this.rtbStatus.ReadOnly = true;
-            this.rtbStatus.Size = new System.Drawing.Size(453, 50);
-            this.rtbStatus.TabIndex = 8;
-            this.rtbStatus.Text = "";
-            // 
             // StatusStrip1
             // 
             this.StatusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ToolStripStatusLabel1});
+            this.lblStatus});
             this.StatusStrip1.Location = new System.Drawing.Point(0, 486);
             this.StatusStrip1.MinimumSize = new System.Drawing.Size(26, 0);
             this.StatusStrip1.Name = "StatusStrip1";
@@ -103,24 +93,25 @@ namespace COMPortTerminal
             this.StatusStrip1.TabIndex = 9;
             this.StatusStrip1.Text = "StatusStrip1";
             // 
-            // ToolStripStatusLabel1
+            // lblStatus
             // 
-            this.ToolStripStatusLabel1.AutoSize = false;
-            this.ToolStripStatusLabel1.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
-            this.ToolStripStatusLabel1.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.ToolStripStatusLabel1.Margin = new System.Windows.Forms.Padding(5);
-            this.ToolStripStatusLabel1.Name = "ToolStripStatusLabel1";
-            this.ToolStripStatusLabel1.Padding = new System.Windows.Forms.Padding(5);
-            this.ToolStripStatusLabel1.Size = new System.Drawing.Size(462, 27);
-            this.ToolStripStatusLabel1.Spring = true;
-            this.ToolStripStatusLabel1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.lblStatus.AutoSize = false;
+            this.lblStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
+            this.lblStatus.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.lblStatus.Margin = new System.Windows.Forms.Padding(5);
+            this.lblStatus.Name = "lblStatus";
+            this.lblStatus.Padding = new System.Windows.Forms.Padding(5);
+            this.lblStatus.Size = new System.Drawing.Size(462, 27);
+            this.lblStatus.Spring = true;
+            this.lblStatus.Text = "Port Closed";
+            this.lblStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // btnPort
             // 
             this.btnPort.AutoSize = true;
-            this.btnPort.Location = new System.Drawing.Point(14, 12);
+            this.btnPort.Location = new System.Drawing.Point(34, 25);
             this.btnPort.Name = "btnPort";
-            this.btnPort.Size = new System.Drawing.Size(167, 47);
+            this.btnPort.Size = new System.Drawing.Size(105, 47);
             this.btnPort.TabIndex = 10;
             this.btnPort.Text = "Port Settings";
             this.btnPort.UseVisualStyleBackColor = true;
@@ -128,9 +119,9 @@ namespace COMPortTerminal
             // btnOpenOrClosePort
             // 
             this.btnOpenOrClosePort.AutoSize = true;
-            this.btnOpenOrClosePort.Location = new System.Drawing.Point(207, 12);
+            this.btnOpenOrClosePort.Location = new System.Drawing.Point(189, 25);
             this.btnOpenOrClosePort.Name = "btnOpenOrClosePort";
-            this.btnOpenOrClosePort.Size = new System.Drawing.Size(163, 47);
+            this.btnOpenOrClosePort.Size = new System.Drawing.Size(109, 47);
             this.btnOpenOrClosePort.TabIndex = 11;
             this.btnOpenOrClosePort.Text = "Open COM Port";
             this.btnOpenOrClosePort.UseVisualStyleBackColor = true;
@@ -139,16 +130,17 @@ namespace COMPortTerminal
             // tmrLookForPortChanges
             // 
             this.tmrLookForPortChanges.Interval = 1000;
+            this.tmrLookForPortChanges.Tick += new System.EventHandler(this.tmrLookForPortChanges_Tick_1);
             // 
-            // btnSend
+            // btnSendVel
             // 
-            this.btnSend.Location = new System.Drawing.Point(207, 422);
-            this.btnSend.Name = "btnSend";
-            this.btnSend.Size = new System.Drawing.Size(75, 23);
-            this.btnSend.TabIndex = 12;
-            this.btnSend.Text = "Clear Box";
-            this.btnSend.UseVisualStyleBackColor = true;
-            this.btnSend.Click += new System.EventHandler(this.btnSend_Click);
+            this.btnSendVel.Location = new System.Drawing.Point(57, 399);
+            this.btnSendVel.Name = "btnSendVel";
+            this.btnSendVel.Size = new System.Drawing.Size(62, 23);
+            this.btnSendVel.TabIndex = 12;
+            this.btnSendVel.Text = "SEND";
+            this.btnSendVel.UseVisualStyleBackColor = true;
+            this.btnSendVel.Click += new System.EventHandler(this.btnSend_Click);
             // 
             // btnDrive
             // 
@@ -156,7 +148,7 @@ namespace COMPortTerminal
             this.btnDrive.Name = "btnDrive";
             this.btnDrive.Size = new System.Drawing.Size(75, 23);
             this.btnDrive.TabIndex = 20;
-            this.btnDrive.Text = "Drive";
+            this.btnDrive.Text = "Drive Direct";
             this.btnDrive.UseVisualStyleBackColor = true;
             this.btnDrive.Click += new System.EventHandler(this.btnDrive_Click);
             // 
@@ -178,73 +170,32 @@ namespace COMPortTerminal
             this.lblDriveCommand.Name = "lblDriveCommand";
             this.lblDriveCommand.Size = new System.Drawing.Size(36, 20);
             this.lblDriveCommand.TabIndex = 33;
-            this.lblDriveCommand.Text = "137";
+            this.lblDriveCommand.Text = "145";
             // 
-            // txtVelocity
+            // txtVelocityLeft
             // 
-            this.txtVelocity.Location = new System.Drawing.Point(218, 137);
-            this.txtVelocity.Name = "txtVelocity";
-            this.txtVelocity.Size = new System.Drawing.Size(64, 20);
-            this.txtVelocity.TabIndex = 34;
-            this.txtVelocity.Text = "200";
+            this.txtVelocityLeft.Location = new System.Drawing.Point(218, 137);
+            this.txtVelocityLeft.Name = "txtVelocityLeft";
+            this.txtVelocityLeft.Size = new System.Drawing.Size(64, 20);
+            this.txtVelocityLeft.TabIndex = 34;
+            this.txtVelocityLeft.Text = "100";
             // 
-            // txtRadius
+            // txtVelocityRight
             // 
-            this.txtRadius.Location = new System.Drawing.Point(321, 137);
-            this.txtRadius.Name = "txtRadius";
-            this.txtRadius.Size = new System.Drawing.Size(64, 20);
-            this.txtRadius.TabIndex = 35;
-            this.txtRadius.Text = "1000";
-            // 
-            // txtCommand1
-            // 
-            this.txtCommand1.Location = new System.Drawing.Point(218, 176);
-            this.txtCommand1.Name = "txtCommand1";
-            this.txtCommand1.Size = new System.Drawing.Size(29, 20);
-            this.txtCommand1.TabIndex = 36;
-            this.txtCommand1.Text = "0";
-            // 
-            // txtCommand2
-            // 
-            this.txtCommand2.Location = new System.Drawing.Point(253, 176);
-            this.txtCommand2.Name = "txtCommand2";
-            this.txtCommand2.Size = new System.Drawing.Size(29, 20);
-            this.txtCommand2.TabIndex = 37;
-            this.txtCommand2.Text = "0";
-            // 
-            // txtCommand3
-            // 
-            this.txtCommand3.Location = new System.Drawing.Point(321, 176);
-            this.txtCommand3.Name = "txtCommand3";
-            this.txtCommand3.Size = new System.Drawing.Size(29, 20);
-            this.txtCommand3.TabIndex = 38;
-            this.txtCommand3.Text = "0";
-            // 
-            // txtCommand4
-            // 
-            this.txtCommand4.Location = new System.Drawing.Point(356, 176);
-            this.txtCommand4.Name = "txtCommand4";
-            this.txtCommand4.Size = new System.Drawing.Size(29, 20);
-            this.txtCommand4.TabIndex = 39;
-            this.txtCommand4.Text = "0";
+            this.txtVelocityRight.Location = new System.Drawing.Point(321, 137);
+            this.txtVelocityRight.Name = "txtVelocityRight";
+            this.txtVelocityRight.Size = new System.Drawing.Size(64, 20);
+            this.txtVelocityRight.TabIndex = 35;
+            this.txtVelocityRight.Text = "100";
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(215, 107);
+            this.label1.Location = new System.Drawing.Point(255, 107);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(82, 13);
             this.label1.TabIndex = 40;
             this.label1.Text = "Velocity: +/-500";
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(318, 107);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(84, 13);
-            this.label2.TabIndex = 41;
-            this.label2.Text = "Radius: +/-2000";
             // 
             // btnStart
             // 
@@ -308,7 +259,7 @@ namespace COMPortTerminal
             // 
             // btnQuit
             // 
-            this.btnQuit.Location = new System.Drawing.Point(14, 422);
+            this.btnQuit.Location = new System.Drawing.Point(275, 266);
             this.btnQuit.Name = "btnQuit";
             this.btnQuit.Size = new System.Drawing.Size(75, 23);
             this.btnQuit.TabIndex = 50;
@@ -318,7 +269,7 @@ namespace COMPortTerminal
             // 
             // btnShutdown
             // 
-            this.btnShutdown.Location = new System.Drawing.Point(107, 422);
+            this.btnShutdown.Location = new System.Drawing.Point(376, 266);
             this.btnShutdown.Name = "btnShutdown";
             this.btnShutdown.Size = new System.Drawing.Size(75, 23);
             this.btnShutdown.TabIndex = 51;
@@ -326,11 +277,137 @@ namespace COMPortTerminal
             this.btnShutdown.UseVisualStyleBackColor = true;
             this.btnShutdown.Click += new System.EventHandler(this.btnShutdown_Click);
             // 
+            // btnOpenJoystick
+            // 
+            this.btnOpenJoystick.Location = new System.Drawing.Point(347, 25);
+            this.btnOpenJoystick.Name = "btnOpenJoystick";
+            this.btnOpenJoystick.Size = new System.Drawing.Size(104, 47);
+            this.btnOpenJoystick.TabIndex = 52;
+            this.btnOpenJoystick.Text = "Open Joystick";
+            this.btnOpenJoystick.UseVisualStyleBackColor = true;
+            // 
+            // scrKP
+            // 
+            this.scrKP.LargeChange = 100;
+            this.scrKP.Location = new System.Drawing.Point(142, 399);
+            this.scrKP.Maximum = 1000;
+            this.scrKP.Name = "scrKP";
+            this.scrKP.Size = new System.Drawing.Size(80, 17);
+            this.scrKP.SmallChange = 10;
+            this.scrKP.TabIndex = 53;
+            this.scrKP.Scroll += new System.Windows.Forms.ScrollEventHandler(this.scrKP_Scroll);
+            // 
+            // lblKP
+            // 
+            this.lblKP.AutoSize = true;
+            this.lblKP.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblKP.Location = new System.Drawing.Point(155, 364);
+            this.lblKP.Name = "lblKP";
+            this.lblKP.Size = new System.Drawing.Size(67, 16);
+            this.lblKP.TabIndex = 54;
+            this.lblKP.Text = "KP = 300";
+            // 
+            // scrVelocity
+            // 
+            this.scrVelocity.LargeChange = 100;
+            this.scrVelocity.Location = new System.Drawing.Point(20, 364);
+            this.scrVelocity.Maximum = 500;
+            this.scrVelocity.Minimum = -500;
+            this.scrVelocity.Name = "scrVelocity";
+            this.scrVelocity.Size = new System.Drawing.Size(17, 80);
+            this.scrVelocity.SmallChange = 10;
+            this.scrVelocity.TabIndex = 55;
+            this.scrVelocity.Scroll += new System.Windows.Forms.ScrollEventHandler(this.scrVelocity_Scroll);
+            // 
+            // lblVelocity
+            // 
+            this.lblVelocity.AutoSize = true;
+            this.lblVelocity.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblVelocity.Location = new System.Drawing.Point(63, 364);
+            this.lblVelocity.Name = "lblVelocity";
+            this.lblVelocity.Size = new System.Drawing.Size(47, 16);
+            this.lblVelocity.TabIndex = 56;
+            this.lblVelocity.Text = "Vel: 0";
+            this.lblVelocity.Click += new System.EventHandler(this.lblVelocity_Click);
+            // 
+            // lblKI
+            // 
+            this.lblKI.AutoSize = true;
+            this.lblKI.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblKI.Location = new System.Drawing.Point(272, 364);
+            this.lblKI.Name = "lblKI";
+            this.lblKI.Size = new System.Drawing.Size(53, 16);
+            this.lblKI.TabIndex = 57;
+            this.lblKI.Text = "KI = 30";
+            // 
+            // lblKD
+            // 
+            this.lblKD.AutoSize = true;
+            this.lblKD.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblKD.Location = new System.Drawing.Point(385, 364);
+            this.lblKD.Name = "lblKD";
+            this.lblKD.Size = new System.Drawing.Size(52, 16);
+            this.lblKD.TabIndex = 58;
+            this.lblKD.Text = "KD = 0";
+            // 
+            // scrKI
+            // 
+            this.scrKI.LargeChange = 100;
+            this.scrKI.Location = new System.Drawing.Point(253, 399);
+            this.scrKI.Maximum = 1000;
+            this.scrKI.Name = "scrKI";
+            this.scrKI.Size = new System.Drawing.Size(80, 17);
+            this.scrKI.SmallChange = 10;
+            this.scrKI.TabIndex = 59;
+            this.scrKI.Scroll += new System.Windows.Forms.ScrollEventHandler(this.scrKI_Scroll);
+            // 
+            // scrKD
+            // 
+            this.scrKD.LargeChange = 100;
+            this.scrKD.Location = new System.Drawing.Point(371, 399);
+            this.scrKD.Maximum = 1000;
+            this.scrKD.Name = "scrKD";
+            this.scrKD.Size = new System.Drawing.Size(80, 17);
+            this.scrKD.SmallChange = 10;
+            this.scrKD.TabIndex = 60;
+            this.scrKD.Scroll += new System.Windows.Forms.ScrollEventHandler(this.scrKD_Scroll);
+            // 
+            // btnSendPID
+            // 
+            this.btnSendPID.Location = new System.Drawing.Point(359, 433);
+            this.btnSendPID.Name = "btnSendPID";
+            this.btnSendPID.Size = new System.Drawing.Size(92, 23);
+            this.btnSendPID.TabIndex = 61;
+            this.btnSendPID.Text = "UPDATE PID";
+            this.btnSendPID.UseVisualStyleBackColor = true;
+            this.btnSendPID.Click += new System.EventHandler(this.btnSendPID_Click);
+            // 
+            // btnStartStop
+            // 
+            this.btnStartStop.Location = new System.Drawing.Point(158, 433);
+            this.btnStartStop.Name = "btnStartStop";
+            this.btnStartStop.Size = new System.Drawing.Size(61, 23);
+            this.btnStartStop.TabIndex = 62;
+            this.btnStartStop.Text = "START";
+            this.btnStartStop.UseVisualStyleBackColor = true;
+            this.btnStartStop.Click += new System.EventHandler(this.btnStartRobotnik_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(487, 523);
+            this.Controls.Add(this.btnStartStop);
+            this.Controls.Add(this.btnSendPID);
+            this.Controls.Add(this.scrKD);
+            this.Controls.Add(this.scrKI);
+            this.Controls.Add(this.lblKD);
+            this.Controls.Add(this.lblKI);
+            this.Controls.Add(this.lblVelocity);
+            this.Controls.Add(this.scrVelocity);
+            this.Controls.Add(this.lblKP);
+            this.Controls.Add(this.scrKP);
+            this.Controls.Add(this.btnOpenJoystick);
             this.Controls.Add(this.btnShutdown);
             this.Controls.Add(this.btnQuit);
             this.Controls.Add(this.btnPower);
@@ -339,22 +416,16 @@ namespace COMPortTerminal
             this.Controls.Add(this.btnStop);
             this.Controls.Add(this.btnReset);
             this.Controls.Add(this.btnStart);
-            this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.txtCommand4);
-            this.Controls.Add(this.txtCommand3);
-            this.Controls.Add(this.txtCommand2);
-            this.Controls.Add(this.txtCommand1);
-            this.Controls.Add(this.txtRadius);
-            this.Controls.Add(this.txtVelocity);
+            this.Controls.Add(this.txtVelocityRight);
+            this.Controls.Add(this.txtVelocityLeft);
             this.Controls.Add(this.lblDriveCommand);
             this.Controls.Add(this.btnHalt);
             this.Controls.Add(this.btnDrive);
-            this.Controls.Add(this.btnSend);
+            this.Controls.Add(this.btnSendVel);
             this.Controls.Add(this.btnOpenOrClosePort);
             this.Controls.Add(this.btnPort);
             this.Controls.Add(this.StatusStrip1);
-            this.Controls.Add(this.rtbStatus);
             this.Controls.Add(this.rtbMonitor);
             this.MaximumSize = new System.Drawing.Size(2000, 2000);
             this.Name = "MainForm";
@@ -370,24 +441,18 @@ namespace COMPortTerminal
         } 
         
         internal /* TRANSINFO: WithEvents */ System.Windows.Forms.RichTextBox rtbMonitor; 
-        internal /* TRANSINFO: WithEvents */ System.Windows.Forms.RichTextBox rtbStatus; 
         internal /* TRANSINFO: WithEvents */ System.Windows.Forms.StatusStrip StatusStrip1; 
-        internal /* TRANSINFO: WithEvents */ System.Windows.Forms.ToolStripStatusLabel ToolStripStatusLabel1; 
+        internal /* TRANSINFO: WithEvents */ System.Windows.Forms.ToolStripStatusLabel lblStatus; 
         internal /* TRANSINFO: WithEvents */ System.Windows.Forms.Button btnPort; 
         internal /* TRANSINFO: WithEvents */ System.Windows.Forms.Button btnOpenOrClosePort; 
         internal /* TRANSINFO: WithEvents */ System.Windows.Forms.Timer tmrLookForPortChanges;
-        private Button btnSend;
+        private Button btnSendVel;
         private Button btnDrive;
         private Button btnHalt;
         private Label lblDriveCommand;
-        private TextBox txtVelocity;
-        private TextBox txtRadius;
-        private TextBox txtCommand1;
-        private TextBox txtCommand2;
-        private TextBox txtCommand3;
-        private TextBox txtCommand4;
+        private TextBox txtVelocityLeft;
+        private TextBox txtVelocityRight;
         private Label label1;
-        private Label label2;
         private Button btnStart;
         private Button btnReset;
         private Button btnStop;
@@ -395,8 +460,18 @@ namespace COMPortTerminal
         private Button btnSafeMode;
         private Button btnPower;
         private Button btnQuit;
-        private Timer timer1;
         private Button btnShutdown;
+        private Button btnOpenJoystick;
+        private HScrollBar scrKP;
+        private Label lblKP;
+        private VScrollBar scrVelocity;
+        private Label lblVelocity;
+        private Label lblKI;
+        private Label lblKD;
+        private HScrollBar scrKI;
+        private HScrollBar scrKD;
+        private Button btnSendPID;
+        private Button btnStartStop;
     } 
     
     
