@@ -5,14 +5,19 @@ using System.Drawing;
 using System.Windows.Forms;
 using COMPortTerminal;
 
+
+
 namespace COMPortTerminal
-{    
+{
     /// <summary>
     /// Routines for finding and accessing COM ports.
     /// </summary>
+    
 
     public class ComPorts  
-    {  
+    {
+        const int PACKETSIZE = 20; // 
+
         private const string ModuleName = "ComPorts"; 
         
         //  Shared members - do not belong to a specific instance of the class.
@@ -341,11 +346,10 @@ namespace COMPortTerminal
                         if ( SelectedPort.IsOpen ) 
                         {                             
                             //  The port is open. Set additional parameters.
-                            //  Timeouts are in milliseconds.
-                            
+                            //  Timeouts are in milliseconds.                            
                             SelectedPort.ReadTimeout = 5000; 
                             SelectedPort.WriteTimeout = 5000;
-                            // SelectedPort.ReceivedBytesThreshold = 32; // $$$$
+                            // SelectedPort.ReceivedBytesThreshold = PACKETSIZE; // $$$$
 
                             //  Specify the routines that run when a DataReceived or ErrorReceived event occurs.
 

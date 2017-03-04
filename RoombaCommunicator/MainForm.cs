@@ -10,6 +10,8 @@
  * 
  * 3-2-2017: Command sequence is now: COMMAND, SUBCOMMAND, NUM DATA BYTES, DATA....
  * Added buttons and commands for changing and sending KP, KI, KD to robot
+ * 
+ * 3-4-17: New text box works with leading character '>'
  */
 
 using Microsoft.Win32;
@@ -67,22 +69,23 @@ namespace COMPortTerminal
         const int MAXPACKET = 80;
         const Int16 MAXVELOCITY = 500;
         const Byte DRIVEDIRECT = 145;
-        const Byte ROOMBA = 0x00;
-        const Byte RASPI = 0xF0;
-        const Byte ROBOTNIK = 0x13;
-        const Byte SETPID = 0x45;
+        const Byte ROOMBA = 0;
+        const Byte RASPI = 240;
+        const Byte ROBOTNIK = 19;
+        const Byte SETPID = 69;
         const Byte START = 128;
         const Byte STOP = 173;
         const Byte POWERDOWN = 133;
         const Byte RESET = 7;
         const Byte SAFE = 131;
         const Byte FULL = 132;
-        const Byte QUIT = 0x80;
-        const Byte SHUTDOWN = 0xA0;
+        const Byte QUIT = 128;
+        const Byte SHUTDOWN = 160;
 
 
-        TwosComplement result = new TwosComplement();
-        String strInputText = "";
+        TwosComplement result = new TwosComplement();        
+        uint timerCounter = 0;
+
 
         /*
         ByteArray result = new ByteArray();
@@ -113,25 +116,23 @@ namespace COMPortTerminal
         */
 
         public MainForm() 
-        { 
+        {
+            
             InitializeComponent();if (transDefaultFormMainForm == null)	transDefaultFormMainForm = this;
            
             btnOpenOrClosePort.Click += new System.EventHandler (btnOpenOrClosePort_Click);
             btnPort.Click += new System.EventHandler (btnPort_Click);  
             Load += new System.EventHandler (Form1_Load);                                     
-            rtbMonitor.TextChanged += new System.EventHandler (rtbMonitor_TextChanged);  
             tmrLookForPortChanges.Tick += new System.EventHandler (tmrLookForPortChanges_Tick);
+            tmrComPortTimeout.Tick += new System.EventHandler(tmrComPortTimeout_Tick);
+            tmrComPortTimeout.Stop();
 
-            //scrKP.Value = KP * 10;
-            //lblKP.Text = scrKP.Value.ToString();       
             scrKP.Value = 300;
             scrKP_Scroll(null, null);
             scrKI.Value = 30;
             scrKI_Scroll(null, null);
             scrKD.Value = 0;
             scrKD_Scroll(null, null);
-
-            // DisplayStatus("Port closed", Color.Red);
         }
 
         private const string ButtonTextOpenPort = "Open COM Port"; 
@@ -170,14 +171,22 @@ namespace COMPortTerminal
                 case "AppendToMonitorTextBox":
 
                     //  Append text to the rtbMonitor textbox using the color for received data.                    
-                    rtbMonitor.SelectionColor = colorReceive;
-                    strInputText = string.Concat(strInputText, formText);
-                    int endPos = strInputText.IndexOf("!");
-                    if (endPos > 0)
-                    {
-                        rtbMonitor.Text = strInputText;
-                        strInputText = "";
-                    }
+                    // rtbMonitor.SelectionColor = colorReceive;
+                    // rtbMonitor.Text = formText; 
+                    String strInputText = formText;
+                    int startIndex = strInputText.IndexOf('>');
+                    if (startIndex >= 0) txtIncoming.Clear();
+                    txtIncoming.Text = txtIncoming.Text + formText;
+                    // tmrComPortTimeout.Start();  // $$$$
+
+
+                    //strInputText = string.Concat(strInputText, formText);
+                    //int endPos = strInputText.IndexOf("<");  // $$$$
+                    //if (endPos == 0)
+                    //{
+                    //    rtbMonitor.Text = strInputText;
+                    //    strInputText = "";
+                    //}
 
                     // rtbMonitor.AppendText( formText ); 
 
@@ -185,9 +194,9 @@ namespace COMPortTerminal
                     // Return to the default color.
 
                     // rtbMonitor.SelectionColor = colorTransmit; 
-                    
+
                     //  Trim the textbox's contents if needed.
-                    
+
                     //if ( rtbMonitor.TextLength > maximumTextBoxLength ) // $$$$
                     //{                         
                     //    TrimTextBoxContents();                         
@@ -327,7 +336,7 @@ namespace COMPortTerminal
             
             // maximumTextBoxLength = 10000;  $$$$
             maximumTextBoxLength = 128;
-            rtbMonitor.SelectionColor = colorTransmit;             
+            // rtbMonitor.SelectionColor = colorTransmit;             
         }
 
         /// <summary>
@@ -337,6 +346,7 @@ namespace COMPortTerminal
 
         private void ProcessTextboxInput()
         {        
+            /*
             IAsyncResult ar = null;
             string msg = null;
             int textLength = 0;
@@ -397,6 +407,7 @@ namespace COMPortTerminal
             //  Update the value that indicates the last character processed.
 
             userInputIndex = rtbMonitor.Text.Length;  
+            */
         }
                 
         /// <summary> 
@@ -529,6 +540,7 @@ namespace COMPortTerminal
 
         private void TrimTextBoxContents() 
         {        
+            /*
             RichTextBox rtbTemp = new RichTextBox(); 
             int textboxTrimSize = 0;           
                         
@@ -542,6 +554,7 @@ namespace COMPortTerminal
             rtbMonitor.Rtf = rtbTemp.Rtf; 
             rtbTemp = null; 
             rtbMonitor.SelectionStart = rtbMonitor.TextLength;             
+            */
         } 
 
         /// <summary>
@@ -689,9 +702,10 @@ namespace COMPortTerminal
         /// Do whatever is needed with new characters in the textbox.
         /// </summary>
      
+
         private void rtbMonitor_TextChanged( System.Object sender, System.EventArgs e ) 
         {            
-            ProcessTextboxInput();             
+            // ProcessTextboxInput();             
         } 
                
         /// <summary>
@@ -782,7 +796,7 @@ namespace COMPortTerminal
 
         private void btnReset_Click(object sender, EventArgs e)
         {
-            rtbMonitor.Text = "";
+            // rtbMonitor.Text = "";
 
             Byte[] arrData = new Byte[5];
             arrData[0] = STX;
@@ -795,7 +809,7 @@ namespace COMPortTerminal
 
         private void btnStop_Click(object sender, EventArgs e)
         {
-            rtbMonitor.Text = "";
+            // rtbMonitor.Text = "";
 
             Byte[] arrData = new Byte[5];
             arrData[0] = STX;
@@ -813,7 +827,7 @@ namespace COMPortTerminal
 
         private void btnSafeMode_Click(object sender, EventArgs e)
         {
-            rtbMonitor.Text = "";
+            //rtbMonitor.Text = "";
 
             Byte[] arrData = new Byte[5];
             arrData[0] = STX;
@@ -826,7 +840,7 @@ namespace COMPortTerminal
 
         private void btnHalt_Click(object sender, EventArgs e)
         {
-            rtbMonitor.Text = "";
+            //rtbMonitor.Text = "";
 
             Byte[] arrData = new Byte[9];
             arrData[0] = STX;
@@ -843,7 +857,7 @@ namespace COMPortTerminal
 
         private void btnFull_Click(object sender, EventArgs e)
         {
-            rtbMonitor.Text = "";
+            //rtbMonitor.Text = "";
 
             Byte[] arrData = new Byte[5];
             arrData[0] = STX;
@@ -868,7 +882,7 @@ namespace COMPortTerminal
 
         private void btnStart_Click(object sender, EventArgs e)
         {
-            rtbMonitor.Text = "";
+            //rtbMonitor.Text = "";
 
             Byte[] arrData = new Byte[5];
             arrData[0] = STX;
@@ -881,7 +895,7 @@ namespace COMPortTerminal
 
         private void btnPower_Click(object sender, EventArgs e)
         {
-            rtbMonitor.Text = "";
+            //rtbMonitor.Text = "";
 
             Byte[] arrData = new Byte[5];
             arrData[0] = STX;
@@ -894,7 +908,7 @@ namespace COMPortTerminal
 
         private void btnQuit_Click(object sender, EventArgs e)
         {
-            rtbMonitor.Text = "QUIT";
+            //rtbMonitor.Text = "QUIT";
             Byte[] arrData = new Byte[5];
             arrData[0] = STX;
             arrData[1] = RASPI;
@@ -906,7 +920,7 @@ namespace COMPortTerminal
 
         private void btnShutdown_Click(object sender, EventArgs e)
         {
-            rtbMonitor.Text = "SHUTDOWN";
+            //rtbMonitor.Text = "SHUTDOWN";
             Byte[] arrData = new Byte[5];
             arrData[0] = STX;
             arrData[1] = RASPI;
@@ -965,7 +979,7 @@ namespace COMPortTerminal
             strVelocityRight = velocityRight.ToString();
             txtVelocityRight.Text = strVelocityRight;
 
-            rtbMonitor.Text = "";
+            //rtbMonitor.Text = "";
             sendVelocity (ROOMBA, velocityLeft, velocityRight);
         }
 
@@ -1050,15 +1064,14 @@ namespace COMPortTerminal
 
         private void btnStartRobotnik_Click(object sender, EventArgs e)
         {
-            Byte[] arrData = new Byte[5];
-            rtbMonitor.Text = "";
+            Byte[] arrData = new Byte[5];            
 
             if (btnStartStop.Text == "START") {
                 btnStartStop.Text = "STOP";                
                 arrData[0] = STX;
                 arrData[1] = ROBOTNIK;
                 arrData[2] = START;
-                arrData[3] = 1;
+                arrData[3] = 0;
                 arrData[4] = ETX;
                 UserPort1.WriteBytesToComPort(arrData, 0, 5);
             }
@@ -1067,11 +1080,24 @@ namespace COMPortTerminal
                 btnStartStop.Text = "START";
                 arrData[0] = STX;
                 arrData[1] = ROBOTNIK;
-                arrData[2] = 1;
-                arrData[3] = STOP;
+                arrData[2] = STOP;
+                arrData[3] = 0;
                 arrData[4] = ETX;
                 UserPort1.WriteBytesToComPort(arrData, 0, 5);
             }
         }
-    }
+
+        private void btnTest_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void tmrComPortTimeout_Tick(object sender, EventArgs e)
+        {
+            timerCounter++;
+            lblTimer.Text = "Timer: " + timerCounter.ToString();
+            UserPort1.SelectedPort.DiscardInBuffer();
+            tmrComPortTimeout.Stop();
+        }
+    }    
 }

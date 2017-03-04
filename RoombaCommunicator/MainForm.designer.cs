@@ -33,7 +33,6 @@ namespace COMPortTerminal
         private void InitializeComponent() 
         {
             this.components = new System.ComponentModel.Container();
-            this.rtbMonitor = new System.Windows.Forms.RichTextBox();
             this.StatusStrip1 = new System.Windows.Forms.StatusStrip();
             this.lblStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.btnPort = new System.Windows.Forms.Button();
@@ -65,22 +64,12 @@ namespace COMPortTerminal
             this.scrKD = new System.Windows.Forms.HScrollBar();
             this.btnSendPID = new System.Windows.Forms.Button();
             this.btnStartStop = new System.Windows.Forms.Button();
+            this.btnTest = new System.Windows.Forms.Button();
+            this.tmrComPortTimeout = new System.Windows.Forms.Timer(this.components);
+            this.lblTimer = new System.Windows.Forms.Label();
+            this.txtIncoming = new System.Windows.Forms.TextBox();
             this.StatusStrip1.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // rtbMonitor
-            // 
-            this.rtbMonitor.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.rtbMonitor.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rtbMonitor.Location = new System.Drawing.Point(20, 315);
-            this.rtbMonitor.MaxLength = 128;
-            this.rtbMonitor.Name = "rtbMonitor";
-            this.rtbMonitor.Size = new System.Drawing.Size(444, 26);
-            this.rtbMonitor.TabIndex = 7;
-            this.rtbMonitor.Text = "";
-            this.rtbMonitor.TextChanged += new System.EventHandler(this.rtbMonitor_TextChanged_1);
             // 
             // StatusStrip1
             // 
@@ -392,11 +381,48 @@ namespace COMPortTerminal
             this.btnStartStop.UseVisualStyleBackColor = true;
             this.btnStartStop.Click += new System.EventHandler(this.btnStartRobotnik_Click);
             // 
+            // btnTest
+            // 
+            this.btnTest.Location = new System.Drawing.Point(253, 433);
+            this.btnTest.Name = "btnTest";
+            this.btnTest.Size = new System.Drawing.Size(75, 23);
+            this.btnTest.TabIndex = 63;
+            this.btnTest.Text = "TEST";
+            this.btnTest.UseVisualStyleBackColor = true;
+            this.btnTest.Click += new System.EventHandler(this.btnTest_Click);
+            // 
+            // tmrComPortTimeout
+            // 
+            this.tmrComPortTimeout.Interval = 10;
+            this.tmrComPortTimeout.Tick += new System.EventHandler(this.tmrComPortTimeout_Tick);
+            // 
+            // lblTimer
+            // 
+            this.lblTimer.AutoSize = true;
+            this.lblTimer.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblTimer.Location = new System.Drawing.Point(263, 198);
+            this.lblTimer.Name = "lblTimer";
+            this.lblTimer.Size = new System.Drawing.Size(59, 16);
+            this.lblTimer.TabIndex = 64;
+            this.lblTimer.Text = "Time: 0";
+            // 
+            // txtIncoming
+            // 
+            this.txtIncoming.Location = new System.Drawing.Point(20, 305);
+            this.txtIncoming.Multiline = true;
+            this.txtIncoming.Name = "txtIncoming";
+            this.txtIncoming.Size = new System.Drawing.Size(444, 56);
+            this.txtIncoming.TabIndex = 65;
+            this.txtIncoming.Text = "TEXT BOX START";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(487, 523);
+            this.Controls.Add(this.txtIncoming);
+            this.Controls.Add(this.lblTimer);
+            this.Controls.Add(this.btnTest);
             this.Controls.Add(this.btnStartStop);
             this.Controls.Add(this.btnSendPID);
             this.Controls.Add(this.scrKD);
@@ -426,7 +452,6 @@ namespace COMPortTerminal
             this.Controls.Add(this.btnOpenOrClosePort);
             this.Controls.Add(this.btnPort);
             this.Controls.Add(this.StatusStrip1);
-            this.Controls.Add(this.rtbMonitor);
             this.MaximumSize = new System.Drawing.Size(2000, 2000);
             this.Name = "MainForm";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
@@ -439,8 +464,6 @@ namespace COMPortTerminal
             this.PerformLayout();
 
         } 
-        
-        internal /* TRANSINFO: WithEvents */ System.Windows.Forms.RichTextBox rtbMonitor; 
         internal /* TRANSINFO: WithEvents */ System.Windows.Forms.StatusStrip StatusStrip1; 
         internal /* TRANSINFO: WithEvents */ System.Windows.Forms.ToolStripStatusLabel lblStatus; 
         internal /* TRANSINFO: WithEvents */ System.Windows.Forms.Button btnPort; 
@@ -472,6 +495,10 @@ namespace COMPortTerminal
         private HScrollBar scrKD;
         private Button btnSendPID;
         private Button btnStartStop;
+        private Button btnTest;
+        private Timer tmrComPortTimeout;
+        private Label lblTimer;
+        private TextBox txtIncoming;
     } 
     
     
